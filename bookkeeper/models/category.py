@@ -3,7 +3,7 @@
 """
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Iterator
+from typing import Iterator, Any
 
 from ..repository.abstract_repository import AbstractRepository
 
@@ -15,12 +15,11 @@ class Category:
     родителя (категория, подкатегорией которой является данная) в атрибуте parent.
     У категорий верхнего уровня parent = None
     """
-    name: str
+    name: str = 'Empty'
     parent: int | None = None
     pk: int = 0
 
-    def get_parent(self,
-                   repo: AbstractRepository['Category']) -> 'Category | None':
+    def get_parent(self, repo: AbstractRepository['Category']) -> 'Category | None':
         """
         Получить родительскую категорию в виде объекта Category
         Если метод вызван у категории верхнего уровня, возвращает None
@@ -116,3 +115,22 @@ class Category:
             repo.add(cat)
             created[child] = cat
         return list(created.values())
+
+    # Оформим красивый вывод для отладки
+    def __str__(self) -> str:
+        return f'pk = {self.pk}; name = {self.name}; parent = {self.parent};'
+    # end
+
+    # Напишем процедуру сравнения двух элементов класса, так как иначе сравнение идёт
+    # по адресу в памяти или ещё чему-то не тому
+    def __eq__(self, check: Any) -> bool:
+        # Проверим сначала, что совпадают типы
+        if not isinstance(check, Category):
+            return NotImplemented
+        else:
+            FTans = ((self.pk == check.pk) and
+                     (self.name == check.name) and
+                     (self.parent == check.parent))
+            return FTans
+        # end
+    # end
